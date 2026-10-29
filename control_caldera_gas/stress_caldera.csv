@@ -1,0 +1,505 @@
+segundo,tipo,mensaje,temperatura,valvula_conocida
+0.000,ESCENARIO,inicio_frio,,
+0.000,TX,T:69,69,
+0.944,RX,Temperatura leida: 69,,
+1.005,TX,T:68,68,
+1.948,RX,Temperatura leida: 68,,
+1.948,RX,Válvula Gas: ABIERTA,,
+2.009,TX,T:68,68,True
+2.952,RX,Temperatura leida: 68,,
+3.013,TX,T:68,68,True
+3.942,RX,Temperatura leida: 68,,
+4.004,TX,T:68,68,True
+4.946,RX,Temperatura leida: 68,,
+5.007,TX,T:68,68,True
+5.949,RX,Temperatura leida: 68,,
+6.009,TX,T:67,67,True
+6.952,RX,Temperatura leida: 67,,
+7.013,TX,T:67,67,True
+7.941,RX,Temperatura leida: 67,,
+8.001,TX,T:67,67,True
+8.940,RX,Temperatura leida: 67,,
+9.001,TX,T:67,67,True
+9.945,RX,Temperatura leida: 67,,
+10.006,TX,T:67,67,True
+10.948,RX,Temperatura leida: 67,,
+11.009,TX,T:67,67,True
+11.950,RX,Temperatura leida: 67,,
+12.011,TX,T:66,66,True
+12.939,RX,Temperatura leida: 66,,
+13.015,TX,T:66,66,True
+13.943,RX,Temperatura leida: 66,,
+14.004,TX,T:66,66,True
+14.947,RX,Temperatura leida: 66,,
+15.008,TX,T:66,66,True
+15.951,RX,Temperatura leida: 66,,
+16.012,TX,T:66,66,True
+16.940,RX,Temperatura leida: 66,,
+17.001,TX,T:66,66,True
+17.943,RX,Temperatura leida: 66,,
+18.004,TX,T:65,65,True
+18.946,RX,Temperatura leida: 65,,
+19.007,TX,T:65,65,True
+19.951,RX,Temperatura leida: 65,,
+20.013,ESCENARIO,umbral_70,,
+20.013,TX,T:69,69,True
+20.940,RX,Temperatura leida: 69,,
+21.001,TX,T:68,68,True
+21.943,RX,Temperatura leida: 68,,
+22.004,TX,T:70,70,True
+22.947,RX,Temperatura leida: 70,,
+23.008,TX,T:72,72,True
+23.952,RX,Temperatura leida: 72,,
+24.013,TX,T:69,69,True
+24.941,RX,Temperatura leida: 69,,
+25.001,TX,T:70,70,True
+25.944,RX,Temperatura leida: 70,,
+26.005,TX,T:71,71,True
+26.947,RX,Temperatura leida: 71,,
+27.008,TX,T:70,70,True
+27.951,RX,Temperatura leida: 70,,
+28.012,TX,T:69,69,True
+28.939,RX,Temperatura leida: 69,,
+29.000,TX,T:68,68,True
+29.944,RX,Temperatura leida: 68,,
+30.005,TX,T:70,70,True
+30.949,RX,Temperatura leida: 70,,
+31.010,TX,T:72,72,True
+31.953,RX,Temperatura leida: 72,,
+32.013,TX,T:69,69,True
+32.941,RX,Temperatura leida: 69,,
+33.003,TX,T:70,70,True
+33.947,RX,Temperatura leida: 70,,
+34.008,TX,T:71,71,True
+34.952,RX,Temperatura leida: 71,,
+35.013,TX,T:70,70,True
+35.941,RX,Temperatura leida: 70,,
+36.003,TX,T:69,69,True
+36.945,RX,Temperatura leida: 69,,
+37.006,TX,T:68,68,True
+37.950,RX,Temperatura leida: 68,,
+38.011,TX,T:70,70,True
+38.954,RX,Temperatura leida: 70,,
+39.015,TX,T:72,72,True
+39.944,RX,Temperatura leida: 72,,
+40.005,TX,T:69,69,True
+40.950,RX,Temperatura leida: 69,,
+41.011,TX,T:70,70,True
+41.941,RX,Temperatura leida: 70,,
+42.002,TX,T:71,71,True
+42.945,RX,Temperatura leida: 71,,
+43.006,TX,T:70,70,True
+43.950,RX,Temperatura leida: 70,,
+44.011,TX,T:69,69,True
+44.954,RX,Temperatura leida: 69,,
+45.015,ESCENARIO,saltos_rapidos,,
+45.015,TX,T:120,120,True
+45.942,RX,Temperatura leida: 120,,
+46.003,TX,T:50,50,True
+46.947,RX,Temperatura leida: 50,,
+47.007,TX,T:99,99,True
+47.950,RX,Temperatura leida: 99,,
+48.012,TX,T:69,69,True
+48.942,RX,Temperatura leida: 69,,
+49.002,TX,T:98,98,True
+49.948,RX,Temperatura leida: 98,,
+50.009,TX,T:55,55,True
+50.954,RX,Temperatura leida: 55,,
+51.015,TX,T:115,115,True
+51.944,RX,Temperatura leida: 115,,
+51.944,RX,Válvula Gas: CERRADA,,
+52.005,TX,T:64,64,False
+52.948,RX,Temperatura leida: 64,,
+53.009,TX,T:105,105,False
+53.954,RX,Temperatura leida: 105,,
+54.015,TX,T:72,72,False
+54.943,RX,Temperatura leida: 72,,
+55.004,TX,T:120,120,False
+55.949,RX,Temperatura leida: 120,,
+56.010,TX,T:50,50,False
+56.953,RX,Temperatura leida: 50,,
+57.014,TX,T:99,99,False
+57.943,RX,Temperatura leida: 99,,
+58.005,TX,T:69,69,False
+58.949,RX,Temperatura leida: 69,,
+59.010,TX,T:98,98,False
+59.955,RX,Temperatura leida: 98,,
+60.001,TX,T:55,55,False
+60.945,RX,Temperatura leida: 55,,
+61.006,TX,T:115,115,False
+61.949,RX,Temperatura leida: 115,,
+62.010,TX,T:64,64,False
+62.953,RX,Temperatura leida: 64,,
+63.014,TX,T:105,105,False
+63.942,RX,Temperatura leida: 105,,
+64.003,TX,T:72,72,False
+64.947,RX,Temperatura leida: 72,,
+65.007,TX,T:120,120,False
+65.951,RX,Temperatura leida: 120,,
+66.012,TX,T:50,50,False
+66.955,RX,Temperatura leida: 50,,
+66.955,RX,Válvula Gas: ABIERTA,,
+67.001,TX,T:99,99,True
+67.944,RX,Temperatura leida: 99,,
+68.005,TX,T:69,69,True
+68.950,RX,Temperatura leida: 69,,
+69.011,TX,T:98,98,True
+69.955,RX,Temperatura leida: 98,,
+70.001,ESCENARIO,umbral_98,,
+70.001,TX,T:96,96,True
+70.945,RX,Temperatura leida: 96,,
+71.006,TX,T:97,97,True
+71.949,RX,Temperatura leida: 97,,
+72.010,TX,T:98,98,True
+72.954,RX,Temperatura leida: 98,,
+73.014,TX,T:99,99,True
+73.518,ALERTA,Sin cierre reportado 1.5s después de T:98 (puede depender del muestreo y telemetría),,
+73.943,RX,Temperatura leida: 99,,
+74.004,TX,T:100,100,True
+74.948,RX,Temperatura leida: 100,,
+75.009,TX,T:98,98,True
+75.512,ALERTA,Sin cierre reportado 1.5s después de T:100 (puede depender del muestreo y telemetría),,
+75.953,RX,Temperatura leida: 98,,
+76.015,TX,T:97,97,True
+76.957,RX,Temperatura leida: 97,,
+77.003,TX,T:99,99,True
+77.947,RX,Temperatura leida: 99,,
+78.008,TX,T:95,95,True
+78.952,RX,Temperatura leida: 95,,
+79.013,TX,T:98,98,True
+79.957,RX,Temperatura leida: 98,,
+80.003,TX,T:96,96,True
+80.947,RX,Temperatura leida: 96,,
+81.008,TX,T:97,97,True
+81.951,RX,Temperatura leida: 97,,
+82.012,TX,T:98,98,True
+82.955,RX,Temperatura leida: 98,,
+83.001,TX,T:99,99,True
+83.519,ALERTA,Sin cierre reportado 1.5s después de T:98 (puede depender del muestreo y telemetría),,
+83.944,RX,Temperatura leida: 99,,
+84.005,TX,T:100,100,True
+84.950,RX,Temperatura leida: 100,,
+85.011,TX,T:98,98,True
+85.514,ALERTA,Sin cierre reportado 1.5s después de T:100 (puede depender del muestreo y telemetría),,
+85.956,RX,Temperatura leida: 98,,
+86.001,TX,T:97,97,True
+86.945,RX,Temperatura leida: 97,,
+87.006,TX,T:99,99,True
+87.950,RX,Temperatura leida: 99,,
+88.011,TX,T:95,95,True
+88.955,RX,Temperatura leida: 95,,
+89.001,TX,T:98,98,True
+89.945,RX,Temperatura leida: 98,,
+90.006,TX,T:96,96,True
+90.951,RX,Temperatura leida: 96,,
+91.012,TX,T:97,97,True
+91.954,RX,Temperatura leida: 97,,
+92.015,TX,T:98,98,True
+92.944,RX,Temperatura leida: 98,,
+93.005,TX,T:99,99,True
+93.522,ALERTA,Sin cierre reportado 1.5s después de T:98 (puede depender del muestreo y telemetría),,
+93.949,RX,Temperatura leida: 99,,
+94.010,TX,T:100,100,True
+94.954,RX,Temperatura leida: 100,,
+95.015,TX,T:98,98,True
+95.519,ALERTA,Sin cierre reportado 1.5s después de T:100 (puede depender del muestreo y telemetría),,
+95.945,RX,Temperatura leida: 98,,
+96.006,TX,T:97,97,True
+96.949,RX,Temperatura leida: 97,,
+97.010,TX,T:99,99,True
+97.953,RX,Temperatura leida: 99,,
+98.014,TX,T:95,95,True
+98.956,RX,Temperatura leida: 95,,
+99.002,TX,T:98,98,True
+99.947,RX,Temperatura leida: 98,,
+100.008,ESCENARIO,sobretemperatura,,
+100.008,TX,T:120,120,True
+100.511,ALERTA,Sin cierre reportado 1.5s después de T:98 (puede depender del muestreo y telemetría),,
+100.951,RX,Temperatura leida: 120,,
+101.013,TX,T:120,120,True
+101.956,RX,Temperatura leida: 120,,
+101.956,RX,Válvula Gas: CERRADA,,
+102.002,TX,T:120,120,False
+102.945,RX,Temperatura leida: 120,,
+103.006,TX,T:120,120,False
+103.950,RX,Temperatura leida: 120,,
+104.011,TX,T:120,120,False
+104.955,RX,Temperatura leida: 120,,
+105.000,TX,T:120,120,False
+105.946,RX,Temperatura leida: 120,,
+106.007,TX,T:120,120,False
+106.948,RX,Temperatura leida: 120,,
+107.009,TX,T:120,120,False
+107.953,RX,Temperatura leida: 120,,
+108.014,TX,T:120,120,False
+108.958,RX,Temperatura leida: 120,,
+109.004,TX,T:110,110,False
+109.949,RX,Temperatura leida: 110,,
+110.010,TX,T:110,110,False
+110.953,RX,Temperatura leida: 110,,
+111.014,TX,T:110,110,False
+111.957,RX,Temperatura leida: 110,,
+112.003,TX,T:110,110,False
+112.947,RX,Temperatura leida: 110,,
+113.008,TX,T:110,110,False
+113.951,RX,Temperatura leida: 110,,
+114.013,TX,T:110,110,False
+114.957,RX,Temperatura leida: 110,,
+115.002,TX,T:110,110,False
+115.947,RX,Temperatura leida: 110,,
+116.008,TX,T:110,110,False
+116.952,RX,Temperatura leida: 110,,
+117.013,TX,T:110,110,False
+117.957,RX,Temperatura leida: 110,,
+118.002,TX,T:110,110,False
+118.946,RX,Temperatura leida: 110,,
+119.008,TX,T:110,110,False
+119.952,RX,Temperatura leida: 110,,
+120.014,ESCENARIO,rebote_critico,,
+120.014,TX,T:99,99,False
+120.958,RX,Temperatura leida: 99,,
+121.004,TX,T:65,65,False
+121.947,RX,Temperatura leida: 65,,
+121.947,RX,Válvula Gas: ABIERTA,,
+122.008,TX,T:101,101,True
+122.953,RX,Temperatura leida: 101,,
+123.014,TX,T:69,69,True
+123.958,RX,Temperatura leida: 69,,
+124.004,TX,T:98,98,True
+124.947,RX,Temperatura leida: 98,,
+125.008,TX,T:70,70,True
+125.953,RX,Temperatura leida: 70,,
+126.014,TX,T:120,120,True
+126.958,RX,Temperatura leida: 120,,
+126.958,RX,Válvula Gas: CERRADA,,
+127.003,TX,T:50,50,False
+127.947,RX,Temperatura leida: 50,,
+128.008,TX,T:99,99,False
+128.951,RX,Temperatura leida: 99,,
+129.012,TX,T:65,65,False
+129.955,RX,Temperatura leida: 65,,
+130.001,TX,T:101,101,False
+130.960,RX,Temperatura leida: 101,,
+131.006,TX,T:69,69,False
+131.949,RX,Temperatura leida: 69,,
+132.010,TX,T:98,98,False
+132.953,RX,Temperatura leida: 98,,
+133.013,TX,T:70,70,False
+133.956,RX,Temperatura leida: 70,,
+134.002,TX,T:120,120,False
+134.959,RX,Temperatura leida: 120,,
+135.004,TX,T:50,50,False
+135.948,RX,Temperatura leida: 50,,
+136.009,TX,T:99,99,False
+136.951,RX,Temperatura leida: 99,,
+137.012,TX,T:65,65,False
+137.956,RX,Temperatura leida: 65,,
+138.002,TX,T:101,101,False
+138.961,RX,Temperatura leida: 101,,
+139.007,TX,T:69,69,False
+139.949,RX,Temperatura leida: 69,,
+140.010,TX,T:98,98,False
+140.953,RX,Temperatura leida: 98,,
+141.014,TX,T:70,70,False
+141.956,RX,Temperatura leida: 70,,
+142.002,TX,T:120,120,False
+142.961,RX,Temperatura leida: 120,,
+143.007,TX,T:50,50,False
+143.949,RX,Temperatura leida: 50,,
+144.010,TX,T:99,99,False
+144.953,RX,Temperatura leida: 99,,
+145.015,ESCENARIO,lecturas_invalidas,,
+145.015,TX,T:abc,,False
+145.959,RX,Temperatura actual: 99,,
+146.005,TX,T:-20,,False
+146.948,RX,Temperatura actual: 99,,
+147.010,TX,T:98,98,False
+147.952,RX,Temperatura leida: 98,,
+148.013,TX,X:75,,False
+148.941,RX,Temperatura actual: 98,,
+149.002,TX,T:98.5,,False
+149.960,RX,Temperatura actual: 98,,
+150.006,TX,T:110,110,False
+150.948,RX,Temperatura leida: 110,,
+151.009,TX,T:75junk,,False
+151.952,RX,Temperatura actual: 110,,
+152.013,TX,T:,,False
+152.942,RX,Temperatura actual: 110,,
+153.003,TX,T:65,65,False
+153.962,RX,Temperatura leida: 65,,
+154.007,TX,T:-20,,False
+154.950,RX,Temperatura actual: 65,,
+155.010,TX,T:999,,False
+155.955,RX,Temperatura leida: 999,,
+156.000,TX,T:98,98,False
+156.958,RX,Temperatura leida: 98,,
+157.003,TX,T:98.5,,False
+157.961,RX,Temperatura actual: 98,,
+158.007,TX,T: 99,,False
+158.951,RX,Temperatura actual: 98,,
+159.012,TX,T:110,110,False
+159.954,RX,Temperatura leida: 110,,
+160.015,TX,T:,,False
+160.943,RX,Temperatura actual: 110,,
+161.004,TX,T:abc,,False
+161.963,RX,Temperatura actual: 110,,
+162.009,TX,T:65,65,False
+162.949,RX,Temperatura leida: 65,,
+163.010,TX,T:999,,False
+163.953,RX,Temperatura leida: 999,,
+164.015,TX,X:75,,False
+164.942,RX,Temperatura actual: 999,,
+165.003,ESCENARIO,sensor_congelado,,
+165.003,TX,T:75,75,False
+165.959,RX,Temperatura leida: 75,,
+166.005,TX,T:75,75,False
+166.957,RX,Temperatura leida: 75,,
+167.002,TX,T:75,75,False
+167.956,RX,Temperatura leida: 75,,
+168.002,TX,T:75,75,False
+168.959,RX,Temperatura leida: 75,,
+169.004,TX,T:75,75,False
+169.962,RX,Temperatura leida: 75,,
+170.008,TX,T:75,75,False
+170.951,RX,Temperatura leida: 75,,
+171.013,TX,T:75,75,False
+171.954,RX,Temperatura leida: 75,,
+172.015,TX,T:75,75,False
+172.957,RX,Temperatura leida: 75,,
+173.003,TX,T:75,75,False
+173.960,RX,Temperatura leida: 75,,
+174.006,TX,T:75,75,False
+174.949,RX,Temperatura leida: 75,,
+175.009,TX,T:75,75,False
+175.951,RX,Temperatura leida: 75,,
+176.012,TX,T:75,75,False
+176.954,RX,Temperatura leida: 75,,
+177.015,TX,T:75,75,False
+177.958,RX,Temperatura leida: 75,,
+178.004,TX,T:75,75,False
+178.963,RX,Temperatura leida: 75,,
+179.009,TX,T:75,75,False
+179.953,RX,Temperatura leida: 75,,
+180.014,TX,T:75,75,False
+180.959,RX,Temperatura leida: 75,,
+181.004,TX,T:75,75,False
+181.963,RX,Temperatura leida: 75,,
+182.008,TX,T:75,75,False
+182.951,RX,Temperatura leida: 75,,
+183.012,TX,T:75,75,False
+183.955,RX,Temperatura leida: 75,,
+184.001,TX,T:75,75,False
+184.961,RX,Temperatura leida: 75,,
+185.007,ESCENARIO,ruido_y_deriva,,
+185.007,TX,T:82,82,False
+185.950,RX,Temperatura leida: 82,,
+186.011,TX,T:88,88,False
+186.953,RX,Temperatura leida: 88,,
+187.014,TX,T:88,88,False
+187.958,RX,Temperatura leida: 88,,
+188.003,TX,T:91,91,False
+188.962,RX,Temperatura leida: 91,,
+189.008,TX,T:99,99,False
+189.952,RX,Temperatura leida: 99,,
+190.013,TX,T:105,105,False
+190.956,RX,Temperatura leida: 105,,
+191.002,TX,T:97,97,False
+191.961,RX,Temperatura leida: 97,,
+192.007,TX,T:95,95,False
+192.950,RX,Temperatura leida: 95,,
+193.011,TX,T:97,97,False
+193.954,RX,Temperatura leida: 97,,
+194.015,TX,T:97,97,False
+194.958,RX,Temperatura leida: 97,,
+195.004,TX,T:98,98,False
+195.962,RX,Temperatura leida: 98,,
+196.008,TX,T:106,106,False
+196.952,RX,Temperatura leida: 106,,
+197.013,TX,T:97,97,False
+197.956,RX,Temperatura leida: 97,,
+198.002,TX,T:93,93,False
+198.961,RX,Temperatura leida: 93,,
+199.006,TX,T:91,91,False
+199.964,RX,Temperatura leida: 91,,
+200.010,TX,T:85,85,False
+200.952,RX,Temperatura leida: 85,,
+201.014,TX,T:80,80,False
+201.956,RX,Temperatura leida: 80,,
+202.002,TX,T:81,81,False
+202.961,RX,Temperatura leida: 81,,
+203.006,TX,T:88,88,False
+203.950,RX,Temperatura leida: 88,,
+204.011,TX,T:80,80,False
+204.956,RX,Temperatura leida: 80,,
+205.001,TX,T:83,83,False
+205.961,RX,Temperatura leida: 83,,
+206.007,TX,T:88,88,False
+206.965,RX,Temperatura leida: 88,,
+207.011,TX,T:87,87,False
+207.953,RX,Temperatura leida: 87,,
+208.013,TX,T:91,91,False
+208.956,RX,Temperatura leida: 91,,
+209.002,TX,T:91,91,False
+209.960,RX,Temperatura leida: 91,,
+210.006,TX,T:88,88,False
+210.966,RX,Temperatura leida: 88,,
+211.011,TX,T:84,84,False
+211.954,RX,Temperatura leida: 84,,
+212.015,TX,T:88,88,False
+212.958,RX,Temperatura leida: 88,,
+213.004,TX,T:85,85,False
+213.963,RX,Temperatura leida: 85,,
+214.009,TX,T:89,89,False
+214.953,RX,Temperatura leida: 89,,
+215.014,TX,T:95,95,False
+215.957,RX,Temperatura leida: 95,,
+216.003,TX,T:97,97,False
+216.961,RX,Temperatura leida: 97,,
+217.007,TX,T:106,106,False
+217.965,RX,Temperatura leida: 106,,
+218.010,TX,T:115,115,False
+218.954,RX,Temperatura leida: 115,,
+219.015,TX,T:119,119,False
+219.960,RX,Temperatura leida: 119,,
+220.005,ESCENARIO,recuperacion,,
+220.005,TX,T:65,65,False
+220.966,RX,Temperatura leida: 65,,
+221.012,TX,T:65,65,False
+221.955,RX,Temperatura leida: 65,,
+221.955,RX,Válvula Gas: ABIERTA,,
+222.001,TX,T:65,65,True
+222.959,RX,Temperatura leida: 65,,
+223.005,TX,T:65,65,True
+223.965,RX,Temperatura leida: 65,,
+224.010,TX,T:65,65,True
+224.954,RX,Temperatura leida: 65,,
+225.015,TX,T:65,65,True
+225.958,RX,Temperatura leida: 65,,
+226.004,TX,T:65,65,True
+226.962,RX,Temperatura leida: 65,,
+227.008,TX,T:65,65,True
+227.953,RX,Temperatura leida: 65,,
+228.014,TX,T:65,65,True
+228.958,RX,Temperatura leida: 65,,
+229.004,TX,T:65,65,True
+229.964,RX,Temperatura leida: 65,,
+230.010,TX,T:75,75,True
+230.953,RX,Temperatura leida: 75,,
+231.014,TX,T:75,75,True
+231.957,RX,Temperatura leida: 75,,
+232.003,TX,T:75,75,True
+232.962,RX,Temperatura leida: 75,,
+233.007,TX,T:75,75,True
+233.966,RX,Temperatura leida: 75,,
+234.012,TX,T:75,75,True
+234.956,RX,Temperatura leida: 75,,
+235.002,TX,T:75,75,True
+235.962,RX,Temperatura leida: 75,,
+236.007,TX,T:75,75,True
+236.965,RX,Temperatura leida: 75,,
+237.010,TX,T:75,75,True
+237.954,RX,Temperatura leida: 75,,
+238.015,TX,T:75,75,True
+238.959,RX,Temperatura leida: 75,,
+239.005,TX,T:75,75,True
+239.965,RX,Temperatura leida: 75,,
