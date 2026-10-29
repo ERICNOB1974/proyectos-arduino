@@ -7,14 +7,14 @@
 #endif
 
 // Constantes
-#define TEMPERATURA_MINIMA_CALDERA          70      // °C
-#define TEMPERATURA_MAXIMA_CALDERA          98      // °C
-#define TIEMPO_MINIMO_ENCENDIDO_CALDERA     10      // segundos
-#define TIEMPO_DESCANSO_CALDERA             10      // segundos
-#define TEMPERATURA_TASA_ENFRIAMIENTO       1       // °C
-#define TIEMPO_TASA_ENFRIAMIENTO            20      // segundos
-#define TEMPERATURA_TASA_CALENTAMIENTO      1       // °C
-#define TIEMPO_TASA_CALENTAMIENTO           10      // segundos
+#define TEMPERATURA_MINIMA_CALDERA 70       // °C
+#define TEMPERATURA_MAXIMA_CALDERA 98       // °C
+#define TIEMPO_MINIMO_ENCENDIDO_CALDERA 10  // segundos
+#define TIEMPO_DESCANSO_CALDERA 10          // segundos
+#define TEMPERATURA_TASA_ENFRIAMIENTO 1     // °C
+#define TIEMPO_TASA_ENFRIAMIENTO 20         // segundos
+#define TEMPERATURA_TASA_CALENTAMIENTO 1    // °C
+#define TIEMPO_TASA_CALENTAMIENTO 10        // segundos
 
 typedef struct {
   uint32_t wcet;
@@ -29,7 +29,7 @@ SemaphoreHandle_t xMutexInversion;
 int temperaturaActual = 75;
 bool valvulaAbierta = false;
 unsigned int segundosEncendido = 0;
-unsigned int segundosApagado = milis() - TIEMPO_DESCANSO_CALDERA * 1000;
+unsigned int segundosApagado = millis() - TIEMPO_DESCANSO_CALDERA * 1000;
 
 // Configuracion de tareas
 static const TareaConfig leerSensorTemperatura{ 0, 1000, configMAX_PRIORITIES - 1 };
@@ -134,7 +134,7 @@ void EvaluacionTemperatura(void *pvParameters) {
       valvulaAbierta = false;
       segundosApagado = ahora;
       Serial.println("Válvula Gas: CERRADA");
-    } else if(temperaturaActual < TEMPERATURA_MINIMA_CALDERA && !valvulaAbierta) {
+    } else if (temperaturaActual < TEMPERATURA_MINIMA_CALDERA && !valvulaAbierta) {
       if (ahora - segundosApagado >= TIEMPO_MINIMO_ENCENDIDO_CALDERA * 1000) {
         valvulaAbierta = true;
         segundosEncendido = ahora;
@@ -145,7 +145,6 @@ void EvaluacionTemperatura(void *pvParameters) {
     vTaskDelayUntil(
       &inicio,
       pdMS_TO_TICKS(config->periodo));
-  
   }
 }
 
