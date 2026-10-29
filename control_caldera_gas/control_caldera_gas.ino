@@ -77,7 +77,7 @@ void delay_ms_activo(uint32_t ms) {
 
 
 
-/* 
+/*
     Lee la temperatura del sensor cada 1 segundo
 */
 void LecturaTemperatura(void *pvParameters) {
@@ -116,7 +116,7 @@ void LecturaTemperatura(void *pvParameters) {
 }
 
 
-/* 
+/*
     Evalua si abrir o cerrar la valvula electrica de gas en base a la temperatura.
     Si la temperatura < 70 ºC entonces se abre la válvula electrica de gas.
     Si la temperatura > 98 ºC entonces la válvula electrica de gas se cierra inmediatamente.
@@ -134,7 +134,7 @@ void EvaluacionTemperatura(void *pvParameters) {
       valvulaAbierta = false;
       segundosApagado = ahora;
       Serial.println("Válvula Gas: CERRADA");
-    } else if (temperaturaActual < TEMPERATURA_MINIMA_CALDERA && !valvulaAbierta) {
+    } else if (temperaturaActual <= TEMPERATURA_MINIMA_CALDERA && !valvulaAbierta) {
       if (ahora - segundosApagado >= TIEMPO_MINIMO_ENCENDIDO_CALDERA * 1000) {
         valvulaAbierta = true;
         segundosEncendido = ahora;
