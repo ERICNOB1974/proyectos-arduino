@@ -1,6 +1,6 @@
 # Proyectos Arduino
 
-Tres proyectos independientes desarrollados en Arduino.
+Tres proyectos independientes desarrollados en Arduino y FreeRTOS.
 
 ## Proyectos
 
