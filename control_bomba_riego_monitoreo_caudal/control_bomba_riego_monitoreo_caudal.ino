@@ -1,4 +1,10 @@
-#include <regex>
+
+#include <Arduino.h>
+#include <stdlib.h>
+#include <string.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <freertos/semphr.h>
 
 #if CONFIG_FREERTOS_UNICORE
 #define TASK_RUNNING_CORE 0
@@ -7,21 +13,36 @@
 #endif
 
 // Constantes
-#define HUMEDAD_MINIMA_SUELO 30    // %
-#define HUMEDAD_MAXIMA_SUELO 90    // %
-#define RPM_MINIMAS_BOMBA 600      // rpm
-#define TIEMPO_INTERVALO_RIEGO 30  // segundos
-#define TIEMPO_ENCENDIDO_BOMBA 10  // segundos
-#define TIEMPO_SIN_CAUDAL 5        // segundos
-#define TIEMPO_VERIFICACION_RPM 1  // segundos
-#define TIEMPO_ALARMA_CAUDAL 15    // segundos
-#define TIEMPO_ALARMA_ROTACION 30  // segundos
+#define HUMEDAD_MINIMA_SUELO 30     // %
+#define HUMEDAD_MAXIMA_SUELO 90     // %
+#define RPM_MINIMAS_BOMBA 600       // RPM
+#define TIEMPO_INTERVALO_RIEGO 30   // segundos
+#define TIEMPO_ENCENDIDO_BOMBA 10   // segundos
+#define TIEMPO_SIN_CAUDAL 5         // segundos
+#define TIEMPO_VERIFICACION_RPM 1   // segundos
+#define TIEMPO_ALARMA_CAUDAL 15     // segundos
+#define TIEMPO_ALARMA_ROTACION 30   // segundos
+
+#define LED_ALARMA 2
+
+// Posiciones del buffer
+enum Sensor {
+  HUMEDAD = 0,
+  CAUDAL = 1,
+  VELOCIDAD = 2
+};
 
 typedef struct {
   uint32_t wcet;
   uint32_t periodo;
   UBaseType_t prioridad;
 } TareaConfig;
+
+// Buffer compartido: humedad, caudal, RPM
+int bufferSensores[3] = {50, 1, 800};
+
+// Mutex para proteger el buffer
+SemaphoreHandle_t mutexBuffer;
 
 // Variables globales
 int humedadActual = 50;
@@ -40,50 +61,185 @@ unsigned long momentoEncendido = 0;
 unsigned long momentoSinCaudal = 0;
 unsigned long momentoAlarmaCaudal = 0;
 unsigned long momentoAlarmaRotacion = 0;
-unsigned long ultimoInicioRiego = millis() - TIEMPO_INTERVALO_RIEGO * 1000;
+unsigned long ultimoInicioRiego = 0;
 
 // Configuracion de tareas
-static const TareaConfig leerSensorCaudal = { 0, 1000, configMAX_PRIORITIES - 1 };  // prioridad mas alta, si la bomba esta encendida, lee si hay caudal
-static const TareaConfig evaluarBomba = { 0, 1000, configMAX_PRIORITIES - 2 };      // verificar al menos 600 rpm y enciende alarma
-static const TareaConfig leerSensorHumedad = { 0, 30000, configMAX_PRIORITIES - 3 };
+static const TareaConfig leerSerial = {0, 1000, configMAX_PRIORITIES - 1};
+
+static const TareaConfig leerSensorCaudal = {0, 1000, configMAX_PRIORITIES - 2};
+
+static const TareaConfig evaluarBomba = {0, 1000, configMAX_PRIORITIES - 3};
+
+static const TareaConfig leerSensorHumedad = {0, 30000, configMAX_PRIORITIES - 4};
+
+// Declaraciones
+void LeerSerial(void *pvParameters);
+void LeerSensorCaudal(void *pvParameters);
+void LeerSensorHumedad(void *pvParameters);
+void EvaluarBomba(void *pvParameters);
+
+int obtenerSensor(Sensor sensor) {
+  int valor = 0;
+
+  if (xSemaphoreTake(mutexBuffer, portMAX_DELAY) == pdTRUE) {
+    valor = bufferSensores[sensor];
+    xSemaphoreGive(mutexBuffer);
+  }
+
+  return valor;
+}
+
+void guardarSensor(Sensor sensor, int valor) {
+  if (xSemaphoreTake(mutexBuffer, portMAX_DELAY) == pdTRUE) {
+    bufferSensores[sensor] = valor;
+    xSemaphoreGive(mutexBuffer);
+  }
+}
 
 void setup() {
   Serial.begin(115200);
 
-  xTaskCreatePinnedToCore(
-    LeerSensorCaudal,
-    "Leer sensor caudal",
-    4096,
-    (void *)&leerSensorCaudal,
-    leerSensorCaudal.prioridad,
-    NULL,
-    TASK_RUNNING_CORE);
+  pinMode(LED_ALARMA, OUTPUT);
+  digitalWrite(LED_ALARMA, LOW);
+
+  mutexBuffer = xSemaphoreCreateMutex();
+
+  if (mutexBuffer == NULL) {
+    Serial.println("Error al crear mutex");
+    while (true) {
+      delay(1000);
+    }
+  }
+
+  // Permite iniciar el primer riego inmediatamente
+  // cuando se detecte falta de humedad.
+  ultimoInicioRiego = millis() - TIEMPO_INTERVALO_RIEGO * 1000UL;
 
   xTaskCreatePinnedToCore(
-    EvaluarBomba,
-    "Evaluar bomba",
-    4096,
-    (void *)&evaluarBomba,
-    evaluarBomba.prioridad,
-    NULL,
-    TASK_RUNNING_CORE);
+      LeerSerial,
+      "Leer serial",
+      4096,
+      (void *)&leerSerial,
+      leerSerial.prioridad,
+      NULL,
+      TASK_RUNNING_CORE);
 
   xTaskCreatePinnedToCore(
-    LeerSensorHumedad,
-    "Leer sensor humedad",
-    4096,
-    (void *)&leerSensorHumedad,
-    leerSensorHumedad.prioridad,
-    NULL,
-    TASK_RUNNING_CORE);
+      LeerSensorCaudal,
+      "Leer sensor caudal",
+      4096,
+      (void *)&leerSensorCaudal,
+      leerSensorCaudal.prioridad,
+      NULL,
+      TASK_RUNNING_CORE);
+
+  xTaskCreatePinnedToCore(
+      EvaluarBomba,
+      "Evaluar bomba",
+      4096,
+      (void *)&evaluarBomba,
+      evaluarBomba.prioridad,
+      NULL,
+      TASK_RUNNING_CORE);
+
+  xTaskCreatePinnedToCore(
+      LeerSensorHumedad,
+      "Leer sensor humedad",
+      4096,
+      (void *)&leerSensorHumedad,
+      leerSensorHumedad.prioridad,
+      NULL,
+      TASK_RUNNING_CORE);
 }
 
 void loop() {
+  vTaskDelay(pdMS_TO_TICKS(1000));
 }
 
 /*
-   Lee si hay caudal o no cuando la bomba esta encedida
-*/
+ * Recibe mensajes:
+ * H:25  -> humedad
+ * C:1   -> caudal
+ * B:800 -> velocidad RPM
+ *
+ * Es la unica tarea que lee Serial.
+ */
+void LeerSerial(void *pvParameters) {
+  const TareaConfig *config = (const TareaConfig *)pvParameters;
+
+  TickType_t inicio = xTaskGetTickCount();
+
+  char linea[32];
+  size_t posicion = 0;
+  bool descartando = false;
+
+  for (;;) {
+
+    while (Serial.available() > 0) {
+      char caracter = Serial.read();
+
+      if (caracter == '\n') {
+        if (!descartando && posicion > 0) {
+          linea[posicion] = '\0';
+
+          // Eliminar retorno de carro si existe
+          if (posicion > 0 && linea[posicion - 1] == '\r') {
+            linea[posicion - 1] = '\0';
+          }
+
+          if (strlen(linea) >= 3 && linea[1] == ':') {
+            char *fin;
+            long valor = strtol(linea + 2, &fin, 10);
+
+            // Comprobar que el numero sea valido
+            if (fin != linea + 2 && *fin == '\0') {
+
+              switch (linea[0]) {
+                case 'H':
+                  if (valor >= 0 && valor <= 100) {
+                    guardarSensor(HUMEDAD, (int)valor);
+                    Serial.printf("Buffer humedad: %ld%%\n", valor);
+                  }
+                  break;
+
+                case 'C':
+                  if (valor == 0 || valor == 1) {
+                    guardarSensor(CAUDAL, (int)valor);
+                    Serial.printf("Buffer caudal: %ld\n", valor);
+                  }
+                  break;
+
+                case 'B':
+                  if (valor >= 0 && valor <= 100000) {
+                    guardarSensor(VELOCIDAD, (int)valor);
+                    Serial.printf("Buffer RPM: %ld\n", valor);
+                  }
+                  break;
+              }
+            }
+          }
+        }
+
+        posicion = 0;
+        descartando = false;
+
+      } else if (!descartando) {
+        if (posicion < sizeof(linea) - 1) {
+          linea[posicion++] = caracter;
+        } else {
+          posicion = 0;
+          descartando = true;
+        }
+      }
+    }
+
+    vTaskDelayUntil(&inicio, pdMS_TO_TICKS(config->periodo));
+  }
+}
+
+/*
+ * Lee el valor del caudal desde el buffer cada 1 s.
+ */
 void LeerSensorCaudal(void *pvParameters) {
   const TareaConfig *config = (const TareaConfig *)pvParameters;
 
@@ -91,101 +247,74 @@ void LeerSensorCaudal(void *pvParameters) {
 
   for (;;) {
 
-    if (Serial.available()) {
-      String entrada = Serial.readStringUntil('\n');
-      entrada.trim();
-      if (entrada == "C:0") {
-        hayCaudal = false;
-      } else if (entrada == "C:1") {
-        hayCaudal = true;
-      }
-    }
-    vTaskDelayUntil(
-      &inicio,
-      pdMS_TO_TICKS(config->periodo));
+    int valor = obtenerSensor(CAUDAL);
+
+    hayCaudal = (valor == 1);
+
+    vTaskDelayUntil(&inicio, pdMS_TO_TICKS(config->periodo));
   }
 }
 
 /*
-   Lee humedad por la entrada serial con el formato "H:XX" donde XX es un numero que representa del porcentaje de humedad del suelo
-*/
+ * Lee la humedad desde el buffer cada 30 s.
+ */
 void LeerSensorHumedad(void *pvParameters) {
+
   const TareaConfig *config = (const TareaConfig *)pvParameters;
 
   TickType_t inicio = xTaskGetTickCount();
 
   for (;;) {
 
-    if (Serial.available()) {
-      String entrada = Serial.readStringUntil('\n');
+    humedadActual = obtenerSensor(HUMEDAD);
 
-      if (entrada.startsWith("H:") && entrada.length() > 2) {
+    Serial.printf("Humedad actual: %d%%\n", humedadActual);
 
-        entrada.trim();
-
-        int separador = entrada.indexOf(':');
-
-        String valorStr = entrada.substring(separador + 1);
-
-        if (std::regex_match(valorStr.c_str(), std::regex("\\d+"))) {
-
-          int valor = valorStr.toInt();
-
-          if (valor >= 0 && valor <= 100) {
-            humedadActual = valor;
-            Serial.printf("Humedad leida: %d%%\n", humedadActual);
-          } else {
-            Serial.printf("Humedad fuera de rango. Valor actual: %d%%\n", humedadActual);
-          }
-
-        } else {
-          Serial.printf("Humedad actual: %d%%\n", humedadActual);
-        }
-
-      } else {
-        Serial.printf("Humedad actual: %d%%\n", humedadActual);
-      }
-
-    } else {
-      Serial.printf("Humedad actual: %d%%\n", humedadActual);
-    }
-
-    vTaskDelayUntil(
-      &inicio,
-      pdMS_TO_TICKS(config->periodo));
+    vTaskDelayUntil(&inicio, pdMS_TO_TICKS(config->periodo));
   }
 }
 
 /*
-   Si la humedad actual es < 30, se activa la bomba de riego durante 10 minutos.
-   Si la humeda actual > 90, se apaga la bomba de riego.
-*/
+ * Controla bomba y alarmas.
+ */
 void EvaluarBomba(void *pvParameters) {
   const TareaConfig *config = (const TareaConfig *)pvParameters;
 
   TickType_t inicio = xTaskGetTickCount();
 
+  bool estadoLed = false;
+
   for (;;) {
     unsigned long ahora = millis();
 
+    // Obtener RPM del buffer
+    velocidadRPM = obtenerSensor(VELOCIDAD);
+
     if (humedadActual < HUMEDAD_MINIMA_SUELO) {
       necesidadRiego = true;
+
     } else if (humedadActual > HUMEDAD_MAXIMA_SUELO) {
       necesidadRiego = false;
-      bombaEncendida = false;
-      Serial.println("Bomba: APAGADA");
+
+      if (bombaEncendida) {
+        bombaEncendida = false;
+        Serial.println("Bomba: APAGADA");
+      }
     }
 
-    //si se necesita riego, la bomba está apagada y el tiempo desde que se regó por ultima vez es mayor a 30
-    if (necesidadRiego && !bombaEncendida && (ahora - ultimoInicioRiego >= TIEMPO_INTERVALO_RIEGO * 1000)) {
-      //prender bomba
+    // Encendido periodico
+    if (necesidadRiego && !bombaEncendida && (ahora - ultimoInicioRiego >= TIEMPO_INTERVALO_RIEGO * 1000UL)) {
+
       bombaEncendida = true;
       ultimoInicioRiego = ahora;
       momentoEncendido = ahora;
       rpmVerificado = false;
+      contandoSinCaudal = false;
+
       Serial.println("Bomba: ENCENDIDA");
     }
 
+    // Control de caudal
     if (bombaEncendida && !hayCaudal) {
 
       if (!contandoSinCaudal) {
@@ -193,50 +322,65 @@ void EvaluarBomba(void *pvParameters) {
         contandoSinCaudal = true;
       }
 
-      //tiempo actual - primer momento sin caudal >= 5 segundos
-      if (ahora - momentoSinCaudal >= TIEMPO_SIN_CAUDAL * 1000) {
+      if (ahora - momentoSinCaudal >= TIEMPO_SIN_CAUDAL * 1000UL) {
+
         bombaEncendida = false;
         contandoSinCaudal = false;
 
         alarmaFaltaDeCaudalActiva = true;
-
-        //cuando arranca la alarma de sin caudal
         momentoAlarmaCaudal = ahora;
 
         Serial.println("Bomba: APAGADA");
-        Serial.println("ERROR: Bomba detenida por falta de caudal");
+        Serial.println(
+            "ERROR: Bomba detenida por falta de caudal");
       }
 
     } else {
       contandoSinCaudal = false;
     }
 
+    // Verificacion de RPM
+    if (bombaEncendida && !rpmVerificado && (ahora - momentoEncendido >= TIEMPO_VERIFICACION_RPM * 1000UL)) {
 
-    if (bombaEncendida && !rpmVerificado && (ahora - momentoEncendido >= TIEMPO_VERIFICACION_RPM * 1000)) {
       rpmVerificado = true;
+
       if (velocidadRPM < RPM_MINIMAS_BOMBA) {
-        Serial.println("ERROR: Bomba sin rotación");
+        Serial.println("ERROR: Bomba sin rotacion");
+
         alarmaRPMSinRotacionActiva = true;
         momentoAlarmaRotacion = ahora;
       }
     }
 
-    // La bomba ya trabajó por 10 segundos, por lo tanto, se apaga
-    if (bombaEncendida && (ahora - momentoEncendido >= TIEMPO_ENCENDIDO_BOMBA * 1000)) {
+    // Apagado despues de 10 segundos
+    if (bombaEncendida && (ahora - momentoEncendido >= TIEMPO_ENCENDIDO_BOMBA * 1000UL)) {
+
       bombaEncendida = false;
       Serial.println("Bomba: APAGADA");
     }
 
-    if (alarmaFaltaDeCaudalActiva && (ahora - momentoAlarmaCaudal >= TIEMPO_ALARMA_CAUDAL * 1000)) {
+    // Finalizar alarma caudal
+    if (alarmaFaltaDeCaudalActiva && (ahora - momentoAlarmaCaudal >= TIEMPO_ALARMA_CAUDAL * 1000UL)) {
+
       alarmaFaltaDeCaudalActiva = false;
     }
 
-    if (alarmaRPMSinRotacionActiva && (ahora - momentoAlarmaRotacion >= TIEMPO_ALARMA_ROTACION * 1000)) {
+    // Finalizar alarma RPM
+    if (alarmaRPMSinRotacionActiva && (ahora - momentoAlarmaRotacion >= TIEMPO_ALARMA_ROTACION * 1000UL)) {
+
       alarmaRPMSinRotacionActiva = false;
     }
 
-    vTaskDelayUntil(
-      &inicio,
-      pdMS_TO_TICKS(config->periodo));
+    if (alarmaFaltaDeCaudalActiva && alarmaRPMSinRotacionActiva) {
+      estadoLed = !estadoLed;
+    } else if (alarmaFaltaDeCaudalActiva || alarmaRPMSinRotacionActiva) {
+      estadoLed = true;
+    } else {
+      estadoLed = false;
+    }
+
+    digitalWrite(LED_ALARMA, estadoLed ? HIGH : LOW);
+
+    vTaskDelayUntil(&inicio, pdMS_TO_TICKS(config->periodo));
   }
 }
