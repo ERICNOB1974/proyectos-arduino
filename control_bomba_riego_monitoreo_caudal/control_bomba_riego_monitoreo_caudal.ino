@@ -79,6 +79,7 @@ void LeerSerial(void *pvParameters);
 void LeerSensorCaudal(void *pvParameters);
 void LeerSensorHumedad(void *pvParameters);
 void EvaluarBomba(void *pvParameters);
+void GestionarAlarmas(void *pvParameters);
 
 int obtenerSensor(Sensor sensor) {
   int valor = 0;
