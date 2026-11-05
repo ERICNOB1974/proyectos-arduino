@@ -22,13 +22,9 @@ typedef struct {
   UBaseType_t prioridad;
 } TareaConfig;
 
-SemaphoreHandle_t xSerialMutex;
-SemaphoreHandle_t xMutexInversion;
-
 // Variables globables
 int temperaturaActual = 75;
 bool valvulaAbierta = false;
-unsigned int segundosEncendido = 0;
 unsigned int segundosApagado = millis() - TIEMPO_DESCANSO_CALDERA * 1000;
 
 // Configuracion de tareas
@@ -59,23 +55,6 @@ void setup() {
 
 void loop() {
 }
-
-void delay_ms_activo(uint32_t ms) {
-  unsigned int ticks_objetivo = (unsigned int)ms;
-  unsigned int ticks = 0;
-  unsigned int ticks_anterior = 0;
-  int contador = 0;
-
-  while (contador < ticks_objetivo) {
-    ticks = (unsigned int)xTaskGetTickCount();
-    if (ticks != ticks_anterior) {
-      contador++;
-    }
-    ticks_anterior = ticks;
-  }
-}
-
-
 
 /*
     Lee la temperatura del sensor cada 1 segundo
@@ -137,7 +116,6 @@ void EvaluacionTemperatura(void *pvParameters) {
       // verificamos que la valvula haya estado abierta al menos 10 segundos
       if (ahora - segundosApagado >= TIEMPO_MINIMO_ENCENDIDO_CALDERA * 1000) {
         valvulaAbierta = true;
-        segundosEncendido = ahora;
         Serial.println("Válvula Gas: ABIERTA");
       }
     }
