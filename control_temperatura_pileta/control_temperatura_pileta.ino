@@ -68,20 +68,24 @@ void LeerSensorTemperaturaCaldera(void *pvParameters);
 void EvaluarBomba(void *pvParameters);
 void EvaluarCaldera(void *pvParameters);
 
+//Devuelve el último valor de un sensor
 int obtenerSensor(Sensor sensor) {
   int valor = 0;
-
+  //Toma el mutex antes de acceder al buffer
   if (xSemaphoreTake(mutexBuffer, portMAX_DELAY) == pdTRUE) {
     valor = bufferSensores[sensor];
+    //Libera el mutex
     xSemaphoreGive(mutexBuffer);
   }
-
   return valor;
 }
 
+//Escribe una lectura simulada en el buffer.
 void guardarSensor(Sensor sensor, int valor) {
+  //Toma el mutex antes de acceder al buffer
   if (xSemaphoreTake(mutexBuffer, portMAX_DELAY) == pdTRUE) {
     bufferSensores[sensor] = valor;
+    //Libera el mutex
     xSemaphoreGive(mutexBuffer);
   }
 }
@@ -91,11 +95,10 @@ void setup() {
 
   mutexBuffer = xSemaphoreCreateMutex();
 
+  //Comprobación de que el mutex se creó correctamente
   if (mutexBuffer == NULL) {
     Serial.println("Error al crear mutex");
-    while (true) {
-      delay(1000);
-    }
+    ESP.restart();
   }
 
   // Permite iniciar el primer riego inmediatamente
@@ -123,7 +126,6 @@ void setup() {
     leerSensorTemperaturaPileta.prioridad,
     NULL,
     TASK_RUNNING_CORE);
-
 
   xTaskCreatePinnedToCore(
     LeerSensorTemperaturaCaldera,
@@ -153,9 +155,7 @@ void setup() {
     TASK_RUNNING_CORE);
 }
 
-void loop() {
-  vTaskDelay(pdMS_TO_TICKS(1000));
-}
+void loop() {}
 
 /*
  * Recibe mensajes:
@@ -164,48 +164,151 @@ void loop() {
  *
  * Es la unica tarea que lee Serial.
  */
+
+/*
+ * Tarea encargada de leer los datos recibidos por el puerto serie.
+ *
+ * Formatos aceptados:
+ *   P:25 -> Temperatura de la pileta = 25 °C
+ *   C:55 -> Temperatura de la caldera = 55 °C
+ *
+ * Cada mensaje debe terminar con '\n'.
+ *
+ * La tarea:
+ * 1. Lee los caracteres recibidos por Serial.
+ * 2. Construye un mensaje completo.
+ * 3. Comprueba que tenga un formato válido.
+ * 4. Identifica el sensor correspondiente.
+ * 5. Guarda el valor en el buffer compartido.
+ */
+
 void LeerSerial(void *pvParameters) {
+
+  // Obtiene la configuración de la tarea: WCET, período y prioridad.
   const TareaConfig *config = (const TareaConfig *)pvParameters;
 
+  // Guarda el tick inicial para ejecutar la tarea periódicamente mediante vTaskDelayUntil().
   TickType_t inicio = xTaskGetTickCount();
 
+  // Array donde se almacenan los caracteres de un mensaje recibido por Serial.
+  // Capacidad: 31 caracteres + terminador '\0'.
   char linea[32];
+
+  // Indica cuántos caracteres se almacenaron hasta el momento en el array linea.
   size_t posicion = 0;
+
+  // Indica si se está descartando un mensaje porque superó la capacidad del array.
   bool descartando = false;
 
   for (;;) {
 
+    // Procesa todos los caracteres disponibles
+    // en el buffer de recepción de Serial.
     while (Serial.available() > 0) {
+
+      // Lee un único carácter del puerto serie.
       char caracter = Serial.read();
 
+      // Comprueba si llegó el fin del mensaje.
+      // '\n' representa un salto de línea.
       if (caracter == '\n') {
+
+        // Solo procesa mensajes que:
+        // 1. No fueron descartados por longitud.
+        // 2. Contienen al menos un carácter.
         if (!descartando && posicion > 0) {
+
+          // Agrega el terminador nulo para que
+          // el array pueda tratarse como una
+          // cadena de caracteres de C.
           linea[posicion] = '\0';
 
-          // Eliminar retorno de carro si existe
-          if (posicion > 0 && linea[posicion - 1] == '\r') {
+          // Elimina '\r' si el mensaje termina
+          // en "\r\n", como ocurre con algunos
+          // monitores serie.
+          if (posicion > 0 &&
+              linea[posicion - 1] == '\r') {
+
             linea[posicion - 1] = '\0';
           }
 
-          if (strlen(linea) >= 3 && linea[1] == ':') {
+          // Verifica el formato básico:
+          // - Mínimo 3 caracteres.
+          // - Segundo carácter igual a ':'.
+          //
+          // Ejemplos:
+          // P:25 -> válido
+          // C:55 -> válido
+          // P25  -> inválido
+          if (strlen(linea) >= 3 &&
+              linea[1] == ':') {
+
+            // Puntero utilizado por strtol()
+            // para indicar dónde termina el número.
             char *fin;
+
+            // Convierte la parte numérica del mensaje
+            // a un entero de tipo long.
+            //
+            // Ejemplo:
+            // "P:25" -> comienza desde "25"
+            // valor = 25
             long valor = strtol(linea + 2, &fin, 10);
 
-            // Comprobar que el numero sea valido
+            // Comprueba que:
+            // 1. Se haya convertido algún dígito.
+            // 2. No queden caracteres después del número.
+            //
+            // Ejemplo:
+            // P:25  -> válido
+            // P:abc -> inválido
+            // P:25x -> inválido
             if (fin != linea + 2 && *fin == '\0') {
 
+              // Identifica el sensor utilizando
+              // el primer carácter del mensaje.
               switch (linea[0]) {
+
+                // Temperatura de la pileta
                 case 'P':
+
+                  // Verifica que la temperatura
+                  // esté dentro del rango permitido.
                   if (valor >= 0 && valor <= 100) {
-                    guardarSensor(TEMPERATURA_PILETA, (int)valor);
-                    Serial.printf("Buffer temperatura pileta: %ld\n", valor);
+
+                    // Guarda la temperatura en el
+                    // buffer compartido, posición 0.
+                    guardarSensor(
+                        TEMPERATURA_PILETA,
+                        (int)valor
+                    );
+
+                    // Informa el valor recibido.
+                    Serial.printf(
+                        "Buffer temperatura pileta: %ld\n",
+                        valor
+                    );
                   }
                   break;
 
+                // Temperatura de la caldera
                 case 'C':
+
+                  // Verifica el rango permitido.
                   if (valor >= 0 && valor <= 100) {
-                    guardarSensor(TEMPERATURA_CALDERA, (int)valor);
-                    Serial.printf("Buffer temperatura caldera: %ld\n", valor);
+
+                    // Guarda la temperatura en el
+                    // buffer compartido, posición 1.
+                    guardarSensor(
+                        TEMPERATURA_CALDERA,
+                        (int)valor
+                    );
+
+                    // Informa el valor recibido.
+                    Serial.printf(
+                        "Buffer temperatura caldera: %ld\n",
+                        valor
+                    );
                   }
                   break;
               }
@@ -213,22 +316,48 @@ void LeerSerial(void *pvParameters) {
           }
         }
 
+        // El mensaje terminó.
+        // Reinicia la posición para comenzar a
+        // recibir el siguiente mensaje.
         posicion = 0;
+
+        // Habilita nuevamente la recepción,
+        // incluso si el mensaje anterior fue largo.
         descartando = false;
 
       } else if (!descartando) {
+
+        // Si todavía no llegó '\n', continúa
+        // almacenando los caracteres recibidos.
+
+        // Comprueba que quede espacio en el array.
+        // Se reserva una posición para '\0'.
         if (posicion < sizeof(linea) - 1) {
+
+          // Guarda el carácter recibido y luego
+          // incrementa la posición.
           linea[posicion++] = caracter;
+
         } else {
+
+          // El mensaje excedió la capacidad.
+          // Se descarta hasta encontrar '\n'.
           posicion = 0;
           descartando = true;
         }
       }
     }
 
-    vTaskDelayUntil(&inicio, pdMS_TO_TICKS(config->periodo));
+    // Suspende la tarea hasta el siguiente período.
+    // Si config->periodo = 1000,
+    // se ejecuta aproximadamente cada 1 segundo.
+    vTaskDelayUntil(
+        &inicio,
+        pdMS_TO_TICKS(config->periodo)
+    );
   }
 }
+
 
 /*
  * Lee el valor del caudal desde el buffer cada 1 s.
@@ -240,6 +369,7 @@ void LeerSensorTemperaturaCaldera(void *pvParameters) {
 
   for (;;) {
 
+    //Obtiene la última temperatura de la caldera simulada
     int valor = obtenerSensor(TEMPERATURA_CALDERA);
 
     temperatura_caldera = valor;
