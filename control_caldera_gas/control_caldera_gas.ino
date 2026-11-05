@@ -22,13 +22,9 @@ typedef struct {
   UBaseType_t prioridad;
 } TareaConfig;
 
-SemaphoreHandle_t xSerialMutex;
-SemaphoreHandle_t xMutexInversion;
-
 // Variables globables
 int temperaturaActual = 75;
 bool valvulaAbierta = false;
-unsigned int segundosEncendido = 0;
 unsigned int segundosApagado = millis() - TIEMPO_DESCANSO_CALDERA * 1000;
 
 // Configuracion de tareas
@@ -59,23 +55,6 @@ void setup() {
 
 void loop() {
 }
-
-void delay_ms_activo(uint32_t ms) {
-  unsigned int ticks_objetivo = (unsigned int)ms;
-  unsigned int ticks = 0;
-  unsigned int ticks_anterior = 0;
-  int contador = 0;
-
-  while (contador < ticks_objetivo) {
-    ticks = (unsigned int)xTaskGetTickCount();
-    if (ticks != ticks_anterior) {
-      contador++;
-    }
-    ticks_anterior = ticks;
-  }
-}
-
-
 
 /*
     Lee la temperatura del sensor cada 1 segundo
@@ -109,9 +88,7 @@ void LecturaTemperatura(void *pvParameters) {
       Serial.printf("Temperatura actual: %d\n", temperaturaActual);
     }
 
-    vTaskDelayUntil(
-      &inicio,
-      pdMS_TO_TICKS(config->periodo));
+    vTaskDelayUntil(&inicio, pdMS_TO_TICKS(config->periodo));
   }
 }
 
@@ -130,26 +107,19 @@ void EvaluacionTemperatura(void *pvParameters) {
     //TickType_t ahora = xTaskGetTickCount();
     unsigned int ahora = millis();
 
+    // apago la valvula
     if (valvulaAbierta && (temperaturaActual > TEMPERATURA_MAXIMA_CALDERA)) {
       valvulaAbierta = false;
       segundosApagado = ahora;
       Serial.println("Válvula Gas: CERRADA");
-    } else if (temperaturaActual <= TEMPERATURA_MINIMA_CALDERA && !valvulaAbierta) {
+    } else if (temperaturaActual <= TEMPERATURA_MINIMA_CALDERA && !valvulaAbierta) { // encender la valvula
+      // verificamos que la valvula haya estado abierta al menos 10 segundos
       if (ahora - segundosApagado >= TIEMPO_MINIMO_ENCENDIDO_CALDERA * 1000) {
         valvulaAbierta = true;
-        segundosEncendido = ahora;
         Serial.println("Válvula Gas: ABIERTA");
       }
     }
 
-    vTaskDelayUntil(
-      &inicio,
-      pdMS_TO_TICKS(config->periodo));
-  }
-}
-
-void Task3(void *pvParameters) {
-
-  for (;;) {
+    vTaskDelayUntil(&inicio, pdMS_TO_TICKS(config->periodo));
   }
 }
