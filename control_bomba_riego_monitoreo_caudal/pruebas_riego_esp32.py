@@ -1,5 +1,6 @@
 
 #!/usr/bin/env python3
+# Permite elegir el puerto y qué prueba ejecutar desde la terminal.
 import argparse
 import sys
 import threading
@@ -12,23 +13,28 @@ except ImportError:
     print("Instalar: sudo pacman -S python-pyserial")
     sys.exit(2)
 
+# Mensajes del ESP32 utilizados para reconocer encendidos, apagados y alarmas.
 ON = "Bomba: ENCENDIDA"
 OFF = "Bomba: APAGADA"
 FLOW_ERROR = "ERROR: Bomba detenida por falta de caudal"
 RPM_ERRORS = ("ERROR: Bomba sin rotación", "ERROR: Bomba sin rotacion")
 
 
+# Cada evento guarda el mensaje recibido y el instante de recepción.
 @dataclass
 class Event:
     when: float
     line: str
 
 
+# Excepción para indicar que una comprobación no se cumplió.
 class TestFailure(Exception):
     pass
 
 
+# Agrupa la conexión serial, el registro de eventos y todas las pruebas.
 class Tester:
+    # Abre la conexión e inicia un hilo que escucha al ESP32.
     def __init__(self, port, baud):
         self.ser = serial.Serial(
             port, baudrate=baud, timeout=0.15, write_timeout=2
@@ -47,6 +53,7 @@ class Tester:
         )
         self.reader.start()
 
+    # Registra cada mensaje con su hora y mantiene el estado de la bomba.
     def _read(self):
         while not self.stop.is_set():
             try:
@@ -83,6 +90,7 @@ class Tester:
                 flush=True
             )
 
+    # Envía una lectura simulada: H=humedad, C=caudal, B=RPM.
     def send(self, key, value):
         msg = f"{key}:{value}\n"
 
@@ -97,6 +105,7 @@ class Tester:
 
         print(f"          PC    > {msg.strip()}", flush=True)
 
+    # Cambia únicamente los sensores indicados, dejando los demás igual.
     def sensor_values(self, humidity=None, flow=None, rpm=None):
         for key, value in [
             ("C", flow),
@@ -107,14 +116,17 @@ class Tester:
                 self.send(key, value)
                 time.sleep(0.25)
 
+    # Marca dónde empieza el registro que queremos analizar.
     def mark(self):
         with self.lock:
             return len(self.events)
 
+    # Devuelve los eventos nuevos a partir de una marca.
     def since(self, idx):
         with self.lock:
             return list(self.events[idx:])
 
+    # Espera un mensaje hasta un tiempo máximo; devuelve None si no aparece.
     def wait_for(self, text, timeout, idx):
         deadline = time.monotonic() + timeout
 
@@ -132,6 +144,7 @@ class Tester:
 
         return None
 
+    # Espera la alarma de RPM, aceptando ambas variantes de acentuación.
     def wait_rpm_error(self, timeout, idx):
         deadline = time.monotonic() + timeout
 
@@ -143,6 +156,7 @@ class Tester:
 
         return None
 
+    # Falla si aparece cualquiera de los mensajes prohibidos durante el período.
     def no_event(self, texts, duration, idx, reason):
         deadline = time.monotonic() + duration
 
@@ -154,10 +168,12 @@ class Tester:
                     )
             time.sleep(0.05)
 
+    # Convierte una condición incumplida en una falla de prueba.
     def check(self, condition, message):
         if not condition:
             raise TestFailure(message)
 
+    # Ejecuta una prueba y registra si aprobó o falló, sin frenar las demás.
     def record(self, title, fn):
         print(f"\n===== {title} =====", flush=True)
 
@@ -174,6 +190,7 @@ class Tester:
                 flush=True
             )
 
+    # Restablece sensores normales y comprueba que no riegue con humedad alta.
     def prepare(self):
         # Esperar a que la tarea de humedad procese H:95.
         self.sensor_values(humidity=95, flow=1, rpm=800)
@@ -195,6 +212,7 @@ class Tester:
             "La bomba sigue encendida al terminar preparación"
         )
 
+    # Simula suelo seco (20 %) y espera que la bomba encienda.
     def start_dry(self, rpm=800):
         self.sensor_values(
             humidity=20, flow=1, rpm=rpm
@@ -210,6 +228,7 @@ class Tester:
 
         return event
 
+    # PRUEBA 1: En los límites exactos 30 % y 90 % no debe arrancar.
     def humidity_limits(self):
         self.prepare()
 
@@ -233,6 +252,7 @@ class Tester:
             "Arrancó con humedad exactamente 90%"
         )
 
+    # PRUEBA 2: Comprueba riego de ~10 s y repetición cada ~30 s.
     def normal_cycle(self):
         self.prepare()
 
@@ -288,6 +308,7 @@ class Tester:
             "El segundo ciclo no se apagó"
         )
 
+    # PRUEBA 3: Con caudal ausente, debe detener la bomba y generar alarma.
     def no_flow(self):
         self.prepare()
         on = self.start_dry()
@@ -325,6 +346,7 @@ class Tester:
 
         self.sensor_values(flow=1)
 
+    # PRUEBA 4: Un corte de caudal de 2,2 s no debe generar alarma.
     def transient_flow(self):
         self.prepare()
         self.start_dry()
@@ -350,6 +372,7 @@ class Tester:
             "Se disparó alarma con corte menor a 5 s"
         )
 
+    # PRUEBA 5: A 450 RPM debe informar falla luego de arrancar.
     def rpm_low(self):
         self.prepare()
         on = self.start_dry(rpm=450)
@@ -379,6 +402,7 @@ class Tester:
 
         self.sensor_values(rpm=800)
 
+    # PRUEBA 6: A exactamente 600 RPM no debe dispararse la alarma.
     def rpm_boundary(self):
         self.prepare()
         self.start_dry(rpm=600)
@@ -400,6 +424,7 @@ class Tester:
 
         self.sensor_values(rpm=800)
 
+    # Deja sensores normales y cierra el puerto serie.
     def close(self):
         try:
             self.sensor_values(
@@ -412,6 +437,7 @@ class Tester:
         self.reader.join(timeout=1)
         self.ser.close()
 
+    # Informa las pruebas aprobadas, fallidas y las verificaciones pendientes.
     def summary(self):
         print("\n" + "=" * 55)
         print("RESUMEN DE PRUEBAS")
@@ -437,6 +463,7 @@ class Tester:
         return 1 if self.failures else 0
 
 
+# Lee los argumentos de la terminal y selecciona las pruebas a ejecutar.
 def main():
     parser = argparse.ArgumentParser(
         description="Pruebas ESP32 riego con FreeRTOS"
@@ -476,6 +503,7 @@ def main():
         print("Cerrá el monitor serie de Arduino.")
         return 2
 
+    # Lista de pruebas: con --test se puede elegir una o ejecutar todas.
     tests = [
         (
             "humedad",
@@ -517,7 +545,7 @@ def main():
                 tester.record(title, fn)
 
     except KeyboardInterrupt:
-        print("\nPruebas interrumpidas.")
+        print("\nPruebas interrumpidas.") 
         return 130
 
     finally:
@@ -526,5 +554,6 @@ def main():
     return tester.summary()
 
 
+# Inicia el programa cuando se ejecuta este archivo directamente.
 if __name__ == "__main__":
     sys.exit(main())
