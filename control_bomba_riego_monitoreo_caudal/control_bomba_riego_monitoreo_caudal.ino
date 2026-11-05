@@ -174,7 +174,7 @@ void loop() {
 void LeerSerial(void *pvParameters) {
   const TareaConfig *config = (const TareaConfig *)pvParameters;
 
-  TickType_t inicio = xTaskGetTickCount();
+  TickType_t inicio = 0;
 
   char linea[32];
   size_t posicion = 0;
@@ -250,7 +250,7 @@ void LeerSerial(void *pvParameters) {
 void LeerSensorCaudal(void *pvParameters) {
   const TareaConfig *config = (const TareaConfig *)pvParameters;
 
-  TickType_t inicio = xTaskGetTickCount();
+  TickType_t inicio = 0;
 
   for (;;) {
 
@@ -269,7 +269,7 @@ void LeerSensorHumedad(void *pvParameters) {
 
   const TareaConfig *config = (const TareaConfig *)pvParameters;
 
-  TickType_t inicio = xTaskGetTickCount();
+  TickType_t inicio = 0;
 
   for (;;) {
 
@@ -295,7 +295,7 @@ void LeerSensorHumedad(void *pvParameters) {
 void GestionarAlarmas(void *pvParameters) {
   const TareaConfig *config = (const TareaConfig *)pvParameters;
 
-  TickType_t inicio = xTaskGetTickCount();
+  TickType_t inicio = 0;
 
   bool estadoLed = false;
 
@@ -347,10 +347,9 @@ void GestionarAlarmas(void *pvParameters) {
  * No controla la duración de las alarmas ni el LED.
  */
 void EvaluarBomba(void *pvParameters) {
-  const TareaConfig *config =
-      (const TareaConfig *)pvParameters;
+  const TareaConfig *config = (const TareaConfig *)pvParameters;
 
-  TickType_t inicio = xTaskGetTickCount();
+  TickType_t inicio = 0;
 
   for (;;) {
     unsigned long ahora = millis();

@@ -163,7 +163,7 @@ void LeerSerial(void *pvParameters) {
 
   const TareaConfig *config = (const TareaConfig *)pvParameters;
 
-  TickType_t inicio = xTaskGetTickCount();
+  TickType_t inicio = 0;
 
   // Array donde se almacenan los caracteres de un mensaje recibido por serial
   // Capacidad: 31 caracteres + terminador '\0'
@@ -273,7 +273,7 @@ void LeerSerial(void *pvParameters) {
 void LeerSensorTemperaturaCaldera(void *pvParameters) {
   const TareaConfig *config = (const TareaConfig *)pvParameters;
 
-  TickType_t inicio = xTaskGetTickCount();
+  TickType_t inicio = 0;
 
   for (;;) {
 
@@ -292,12 +292,12 @@ void LeerSensorTemperaturaCaldera(void *pvParameters) {
 void LeerSensorTemperaturaPileta(void *pvParameters) {
   const TareaConfig *config = (const TareaConfig *)pvParameters;
 
-  TickType_t inicio = xTaskGetTickCount();
+  TickType_t inicio = 0;
 
   for (;;) {
 
     int valor = obtenerSensor(TEMPERATURA_PILETA);
-
+ 
     temperatura_pileta = valor;
 
     vTaskDelayUntil(&inicio, pdMS_TO_TICKS(config->periodo));
@@ -307,7 +307,7 @@ void LeerSensorTemperaturaPileta(void *pvParameters) {
 void EvaluarBomba(void *pvParameters) {
   const TareaConfig *config = (const TareaConfig *)pvParameters;
 
-  TickType_t inicio = xTaskGetTickCount();
+  TickType_t inicio = 0;
 
   for (;;) {
     unsigned long ahora = millis();
@@ -350,7 +350,7 @@ void EvaluarBomba(void *pvParameters) {
 void EvaluarCaldera(void *pvParameters) {
   const TareaConfig *config = (const TareaConfig *)pvParameters;
 
-  TickType_t inicio = xTaskGetTickCount();
+  TickType_t inicio = 0;
 
   for (;;) {
 

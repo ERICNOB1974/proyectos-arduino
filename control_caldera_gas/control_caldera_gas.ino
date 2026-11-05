@@ -62,7 +62,7 @@ void loop() {
 void LecturaTemperatura(void *pvParameters) {
   const TareaConfig *config = (const TareaConfig *)pvParameters;
 
-  TickType_t inicio = xTaskGetTickCount();
+  TickType_t inicio = 0;
   for (;;) {
 
     if (Serial.available()) {
@@ -101,10 +101,10 @@ void LecturaTemperatura(void *pvParameters) {
 void EvaluacionTemperatura(void *pvParameters) {
   const TareaConfig *config = (const TareaConfig *)pvParameters;
 
-  TickType_t inicio = xTaskGetTickCount();
+  TickType_t inicio = 0;
   for (;;) {
 
-    //TickType_t ahora = xTaskGetTickCount();
+    //TickType_t ahora = 0;
     unsigned int ahora = millis();
 
     // apago la valvula
