@@ -47,8 +47,6 @@ bool valvulaGasAbierta = false;
 bool necesitaCalefaccion = false;
 
 unsigned long momentoEncendido = 0;
-unsigned long momentoAlarmaRotacion = 0;
-unsigned long ultimoInicioRiego = 0;
 
 // Configuracion de tareas
 static const TareaConfig leerSerial = { 0, 1000, configMAX_PRIORITIES - 1 };
@@ -60,13 +58,6 @@ static const TareaConfig evaluarBomba = { 0, 1000, configMAX_PRIORITIES - 3 };
 static const TareaConfig leerSensorTemperaturaPileta = { 0, 6000, configMAX_PRIORITIES - 4 };
 
 static const TareaConfig leerSensorTemperaturaCaldera = { 0, 15000, configMAX_PRIORITIES - 5 };
-
-// Declaraciones
-void LeerSerial(void *pvParameters);
-void LeerSensorTemperaturaPileta(void *pvParameters);
-void LeerSensorTemperaturaCaldera(void *pvParameters);
-void EvaluarBomba(void *pvParameters);
-void EvaluarCaldera(void *pvParameters);
 
 //Devuelve el último valor de un sensor
 int obtenerSensor(Sensor sensor) {
@@ -277,7 +268,7 @@ void LeerSerial(void *pvParameters) {
 
 
 /*
- * Lee el valor del caudal desde el buffer cada 1 s.
+ * Lee la temperatura de la caldera desde el buffer cada 15 segundos
  */
 void LeerSensorTemperaturaCaldera(void *pvParameters) {
   const TareaConfig *config = (const TareaConfig *)pvParameters;
@@ -296,7 +287,7 @@ void LeerSensorTemperaturaCaldera(void *pvParameters) {
 }
 
 /*
- * Lee el valor del caudal desde el buffer cada 1 s.
+ * Lee la temperatura de la pileta desde el buffer cada 6 segundos
  */
 void LeerSensorTemperaturaPileta(void *pvParameters) {
   const TareaConfig *config = (const TareaConfig *)pvParameters;
