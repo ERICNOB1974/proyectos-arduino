@@ -289,7 +289,7 @@ void LeerSensorHumedad(void *pvParameters) {
  * Comportamiento del LED:
  * - Ninguna alarma: apagado.
  * - Una alarma: encendido fijo.
- * - Dos alarmas: parpadeo cada 500 ms.
+ * - Dos alarmas: parpadeo cada 1000 ms.
  */
 void GestionarAlarmas(void *pvParameters) {
   const TareaConfig *config = (const TareaConfig *)pvParameters;
