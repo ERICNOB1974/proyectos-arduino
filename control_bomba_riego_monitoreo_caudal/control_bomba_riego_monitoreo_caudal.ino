@@ -64,15 +64,17 @@ unsigned long momentoAlarmaRotacion = 0;
 unsigned long ultimoInicioRiego = 0;
 
 // Configuracion de tareas
-static const TareaConfig leerSerial = {0, 1000, configMAX_PRIORITIES - 1};
+static const TareaConfig graficarPlotter = { 0, 900, configMAX_PRIORITIES - 1 };
 
-static const TareaConfig leerSensorCaudal = {0, 1000, configMAX_PRIORITIES - 2};
+static const TareaConfig leerSerial = {0, 1000, configMAX_PRIORITIES - 2};
 
-static const TareaConfig evaluarBomba ={0, 1000, configMAX_PRIORITIES - 3};
+static const TareaConfig leerSensorCaudal = {0, 1000, configMAX_PRIORITIES - 3};
 
-static const TareaConfig gestionarAlarmas ={0, 1000, configMAX_PRIORITIES - 4};
+static const TareaConfig evaluarBomba ={0, 1000, configMAX_PRIORITIES - 4};
 
-static const TareaConfig leerSensorHumedad ={0, 30000, configMAX_PRIORITIES - 5};
+static const TareaConfig gestionarAlarmas ={0, 1000, configMAX_PRIORITIES - 5};
+
+static const TareaConfig leerSensorHumedad ={0, 30000, configMAX_PRIORITIES - 6};
 
 // Declaraciones
 void LeerSerial(void *pvParameters);
@@ -80,6 +82,7 @@ void LeerSensorCaudal(void *pvParameters);
 void LeerSensorHumedad(void *pvParameters);
 void EvaluarBomba(void *pvParameters);
 void GestionarAlarmas(void *pvParameters);
+void GraficarPlotter(void *pvParameters);
 
 int obtenerSensor(Sensor sensor) {
   int valor = 0;
@@ -150,6 +153,7 @@ void setup() {
       leerSensorHumedad.prioridad,
       NULL,
       TASK_RUNNING_CORE);
+
   xTaskCreatePinnedToCore(
     GestionarAlarmas,
     "Gestionar alarmas",
@@ -158,9 +162,32 @@ void setup() {
     gestionarAlarmas.prioridad,
     NULL,
     TASK_RUNNING_CORE);
+
+  xTaskCreatePinnedToCore(
+    GraficarPlotter,
+    "Graficar plotter",
+    4096,
+    (void *)&graficarPlotter,
+    graficarPlotter.prioridad,
+    NULL,
+    TASK_RUNNING_CORE);
 }
 
 void loop() {
+}
+
+void GraficarPlotter(void *pvParameters) {
+  const TareaConfig *config = (const TareaConfig *)pvParameters;
+
+  TickType_t inicio = 0;
+
+  for (;;) {
+
+    Serial.printf("HumedadActual:%d\tMin:30\tMax:90\tBombaEncendida:%d\tCaudal:%d\tRPM:%d\tAlarmaCaudal:%d\tAlarmaRPM:%d\n", humedadActual, bombaEncendida, hayCaudal, velocidadRPM, alarmaFaltaDeCaudalActiva, alarmaRPMSinRotacionActiva);
+    vTaskDelayUntil(
+      &inicio,
+      pdMS_TO_TICKS(config->periodo));
+  }
 }
 
 /*

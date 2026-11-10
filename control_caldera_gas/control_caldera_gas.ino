@@ -28,6 +28,7 @@ bool valvulaAbierta = false;
 unsigned int segundosApagado = millis() - TIEMPO_DESCANSO_CALDERA * 1000;
 
 // Configuracion de tareas
+static const TareaConfig graficarPlotter = { 0, 900, configMAX_PRIORITIES - 1 };
 static const TareaConfig leerSensorTemperatura{ 0, 1000, configMAX_PRIORITIES - 1 };
 static const TareaConfig evaluarTemperatura = { 0, 5000, configMAX_PRIORITIES - 2 };
 
@@ -51,9 +52,31 @@ void setup() {
     evaluarTemperatura.prioridad,
     NULL,
     TASK_RUNNING_CORE);
+
+  xTaskCreatePinnedToCore(
+    GraficarPlotter,
+    "Graficar plotter",
+    4096,
+    (void *)&graficarPlotter,
+    graficarPlotter.prioridad,
+    NULL,
+    TASK_RUNNING_CORE);
 }
 
 void loop() {
+}
+
+void GraficarPlotter(void *pvParameters) {
+  const TareaConfig *config = (const TareaConfig *)pvParameters;
+
+  TickType_t inicio = 0;
+
+  for (;;) {
+    Serial.printf("Temp:%d\tMin:70\tMax:98\tValvula:%d\n", temperaturaActual, valvulaAbierta ? 1 : 0);
+    vTaskDelayUntil(
+      &inicio,
+      pdMS_TO_TICKS(config->periodo));
+  }
 }
 
 /*

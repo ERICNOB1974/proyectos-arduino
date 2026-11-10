@@ -49,15 +49,17 @@ bool necesitaCalefaccion = false;
 unsigned long momentoEncendido = 0;
 
 // Configuracion de tareas
-static const TareaConfig leerSerial = { 0, 1000, configMAX_PRIORITIES - 1 };
+static const TareaConfig graficarPlotter = { 0, 900, configMAX_PRIORITIES - 1 };
 
-static const TareaConfig evaluarCaldera = { 0, 1000, configMAX_PRIORITIES - 2 };
+static const TareaConfig leerSerial = { 0, 1000, configMAX_PRIORITIES - 2 };
 
-static const TareaConfig evaluarBomba = { 0, 1000, configMAX_PRIORITIES - 3 };
+static const TareaConfig evaluarCaldera = { 0, 1000, configMAX_PRIORITIES - 3 };
 
-static const TareaConfig leerSensorTemperaturaPileta = { 0, 6000, configMAX_PRIORITIES - 4 };
+static const TareaConfig evaluarBomba = { 0, 1000, configMAX_PRIORITIES - 4 };
 
-static const TareaConfig leerSensorTemperaturaCaldera = { 0, 15000, configMAX_PRIORITIES - 5 };
+static const TareaConfig leerSensorTemperaturaPileta = { 0, 6000, configMAX_PRIORITIES - 5 };
+
+static const TareaConfig leerSensorTemperaturaCaldera = { 0, 15000, configMAX_PRIORITIES - 6 };
 
 //Devuelve el último valor de un sensor
 int obtenerSensor(Sensor sensor) {
@@ -97,6 +99,7 @@ void setup() {
   void LeerSensorTemperaturaCaldera(void *pvParameters);
   void EvaluarBomba(void *pvParameters);
   void EvaluarCaldera(void *pvParameters);
+  void GraficarPlotter(void *pvParameters);
 
   xTaskCreatePinnedToCore(
     LeerSerial,
@@ -142,9 +145,35 @@ void setup() {
     evaluarCaldera.prioridad,
     NULL,
     TASK_RUNNING_CORE);
+
+  xTaskCreatePinnedToCore(
+    GraficarPlotter,
+    "Graficar plotter",
+    4096,
+    (void *)&graficarPlotter,
+    graficarPlotter.prioridad,
+    NULL,
+    TASK_RUNNING_CORE);
 }
 
 void loop() {}
+
+
+
+void GraficarPlotter(void *pvParameters) {
+  const TareaConfig *config = (const TareaConfig *)pvParameters;
+
+  TickType_t inicio = 0;
+
+  for (;;) {
+
+    Serial.printf("Temp_pileta:%d\tMin_pileta:26\tMax_pileta:30\tBomba_circulación:%d\n", temperatura_pileta, bombaEncendida ? 1 : 0);
+    Serial.printf("Temp_caldera:%d\tMin_caldera:45\tMax_caldera:60\tValvula_gas:%d\n", temperatura_caldera, valvulaGasAbierta ? 1 : 0);
+    vTaskDelayUntil(
+      &inicio,
+      pdMS_TO_TICKS(config->periodo));
+  }
+}
 
 
 /*
@@ -192,8 +221,7 @@ void LeerSerial(void *pvParameters) {
           linea[posicion] = '\0';
 
           // Elimina '\r' si el mensaje termina en "\r\n", como ocurre con algunos monitores serie.
-          if (posicion > 0 &&
-              linea[posicion - 1] == '\r') {
+          if (posicion > 0 && linea[posicion - 1] == '\r') {
 
             linea[posicion - 1] = '\0';
           }
@@ -259,10 +287,10 @@ void LeerSerial(void *pvParameters) {
       }
     }
 
+
     vTaskDelayUntil(
-        &inicio,
-        pdMS_TO_TICKS(config->periodo)
-    );
+      &inicio,
+      pdMS_TO_TICKS(config->periodo));
   }
 }
 
@@ -297,7 +325,7 @@ void LeerSensorTemperaturaPileta(void *pvParameters) {
   for (;;) {
 
     int valor = obtenerSensor(TEMPERATURA_PILETA);
- 
+
     temperatura_pileta = valor;
 
     vTaskDelayUntil(&inicio, pdMS_TO_TICKS(config->periodo));
